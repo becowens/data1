@@ -16,26 +16,19 @@ df <- read_excel("/Users/rebeccaowens/Desktop/data1/DATA2x02_survey_2025_Respons
 
 df_cleaned <- df %>%
   mutate(
-    # Categorical and text columns
     `Which unit are you enrolled in?` = as.factor(`Which unit are you enrolled in?`),
     `Do you submit assignments on time?` = as.factor(`Do you submit assignments on time?`),
     `Have you ever used R before starting DATA2x02?` = as.factor(`Have you ever used R before starting DATA2x02?`),
     `What kind of role (active or passive) do you think you are when working as part of a team?` = as.factor(`What kind of role (active or passive) do you think you are when working as part of a team?`),
-    `What is your favourite anime?` = str_trim(`What is your favourite anime?`),  # Open text, stripped whitespace
-    
-    # Discrete and numerical fields
+    `What is your favourite anime?` = str_trim(`What is your favourite anime?`),
     `How many hours a week (on average) do you work in paid employment?` = as.numeric(`How many hours a week (on average) do you work in paid employment?`),
     `Which year of university are you currently in?` = as.integer(`Which year of university are you currently in?`),
     `How many languages can you speak fluently?` = as.integer(`How many languages can you speak fluently?`),
     `How many languages can you read?` = as.integer(`How many languages can you read?`),
     `How old are you?` = as.integer(`How old are you?`),
-
-    # Open categorical/numeric
     `How many Weet-Bix would you typically eat in one sitting?` = as.integer(`How many Weet-Bix would you typically eat in one sitting?`),
     `What is the average amount of money you spend each week on food/beverages?` = as.numeric(`What is the average amount of money you spend each week on food/beverages?`),
     `What country were you born in?` = as.factor(`What country were you born in?`),
-
-    # Binary and multiple category fields
     `Do you tend to lean towards saying "yes" or towards saying "no" to things throughout life?` = as.factor(`Do you tend to lean towards saying "yes" or towards saying "no" to things throughout life?`),
     `Do you pay rent?` = as.factor(`Do you pay rent?`),
     `Do you believe in the existence of aliens (Extraterrestrial Life)?` = as.factor(`Do you believe in the existence of aliens (Extraterrestrial Life)?`),
