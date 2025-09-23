@@ -82,8 +82,51 @@ server <- function(input, output, session) {
     tbl <- table(df[[input$cat_var1]], df[[input$cat_var2]])
     expected <- chisq.test(tbl)$expected
     })
+  
+  
+  
+  
+  output$t_test_results <- renderPrint({
+    req(input$num_var, input$cat_var)
+    
+    df_sub <- df
+    cat_var <- input$cat_var
+    num_var <- input$num_var
+    
+    if(!is.null(input$selected_levels)) {
+      df_sub <- df_sub %>% filter(.data[[cat_var]] %in% input$selected_levels)
+    }
+    
+    groups <- factor(df_sub[[cat_var]])
+    values <- df_sub[[num_var]]
+    
+    n_levels <- length(levels(groups))
+    
+    if(n_levels == 2){
+      test_res <- t.test(values ~ groups)
+      cat("Two-sample t-test results:\n")
+      print(test_res)
+    } else if(n_levels > 2) {
+      cat("Group normality checks (Shapiro-Wilk test):\n")
+      shapiro_results <- tapply(values, groups, function(x) shakapiro.test(x)$p.value)
+      print(shapiro_results)
+      
+      cat("\nANOVA test results:\n")
+      anova_res <- aov(values ~ groups)
+      print(summary(anova_res))
+      
+    } 
+    }
+)
+  
+  
+  
+  
+  
   }
   
+
+
   
   
   
