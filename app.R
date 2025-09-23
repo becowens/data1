@@ -17,3 +17,6 @@ server <- function(input, output, session) {
       labs(x = input$cat_var1, fill = input$cat_var2) +
       theme_minimal()
   })}
+
+
+shinyApp(ui, server)
