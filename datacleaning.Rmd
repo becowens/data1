@@ -1,0 +1,75 @@
+---
+title: "datacleaning"
+author: "Rebecca Owens"
+date: "2025-09-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(stringr)
+library(forcats)
+library(readxl)
+
+
+df <- read_excel("/Users/rebeccaowens/Desktop/data1/DATA2x02_survey_2025_Responses.xlsx")
+
+df_cleaned <- df %>%
+  mutate(
+    # Categorical and text columns
+    `Which unit are you enrolled in?` = as.factor(`Which unit are you enrolled in?`),
+    `Do you submit assignments on time?` = as.factor(`Do you submit assignments on time?`),
+    `Have you ever used R before starting DATA2x02?` = as.factor(`Have you ever used R before starting DATA2x02?`),
+    `What kind of role (active or passive) do you think you are when working as part of a team?` = as.factor(`What kind of role (active or passive) do you think you are when working as part of a team?`),
+    `What is your favourite anime?` = str_trim(`What is your favourite anime?`),  # Open text, stripped whitespace
+    
+    # Discrete and numerical fields
+    `How many hours a week (on average) do you work in paid employment?` = as.numeric(`How many hours a week (on average) do you work in paid employment?`),
+    `Which year of university are you currently in?` = as.integer(`Which year of university are you currently in?`),
+    `How many languages can you speak fluently?` = as.integer(`How many languages can you speak fluently?`),
+    `How many languages can you read?` = as.integer(`How many languages can you read?`),
+    `How old are you?` = as.integer(`How old are you?`),
+
+    # Open categorical/numeric
+    `How many Weet-Bix would you typically eat in one sitting?` = as.integer(`How many Weet-Bix would you typically eat in one sitting?`),
+    `What is the average amount of money you spend each week on food/beverages?` = as.numeric(`What is the average amount of money you spend each week on food/beverages?`),
+    `What country were you born in?` = as.factor(`What country were you born in?`),
+
+    # Binary and multiple category fields
+    `Do you tend to lean towards saying "yes" or towards saying "no" to things throughout life?` = as.factor(`Do you tend to lean towards saying "yes" or towards saying "no" to things throughout life?`),
+    `Do you pay rent?` = as.factor(`Do you pay rent?`),
+    `Do you believe in the existence of aliens (Extraterrestrial Life)?` = as.factor(`Do you believe in the existence of aliens (Extraterrestrial Life)?`),
+    `Do you work?` = as.factor(`Do you work?`),
+    `What is your gender?` = as.factor(`What is your gender?`),
+    `What are your current living arrangements?` = as.factor(`What are your current living arrangements?`),
+    `What is your favourite social media platform?` = as.factor(`What is your favourite social media platform?`)
+  )
+
+
+df_select <- df_cleaned %>%
+  select(
+    unit = `Which unit are you enrolled in?`,
+    exercise_hours = `On average, how many hours each week do you spend exercising?`,
+    work_hours = `How many hours a week (on average) do you work in paid employment?`,
+    submit_on_time = `Do you submit assignments on time?`,
+    used_r_before = `Have you ever used R before starting DATA2x02?`,
+    team_role = `What kind of role (active or passive) do you think you are when working as part of a team?`,
+    uni_year = `Which year of university are you currently in?`,
+    fav_anime = `What is your favourite anime?`,
+    fluent_languages = `How many languages can you speak fluently?`,
+    readable_languages = `How many languages can you read?`,
+    country_birth = `What country were you born in?`,
+    grade_goal = `What final grade are you aiming to achieve in DATA2x02?`,
+    manage_assignments = `When it comes to assignments / due tasks do you:`,
+    trimester_preference = `Would you prefer to have a trimester system (3 main teaching sessions per year) or stick with the existing semester system (2 main teaching sessions per year)?`,
+    age = `How old are you?`,
+    say_yes_or_no = `Do you tend to lean towards saying "yes" or towards saying "no" to things throughout life?`,
+    pays_rent = `Do you pay rent?`,
+    bathroom_stall_choice = `You enter a public bathroom and there are three stalls to choose from. All three are unoccupied. Which do you choose?`,
+    weetbix_per_sitting = `How many Weet-Bix would you typically eat in one sitting?`,
+    weekly_food_spend = `What is the average amount of money you spend each week on food/beverages?`
+  )
+
+
+```
+
