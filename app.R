@@ -3,6 +3,7 @@ library(readxl)
 library(dplyr)
 library(janitor)
 library(DT)
+library(ggplot2)
 
 
 
@@ -26,9 +27,7 @@ server <- function(input, output, session) {
     }
   })
   
-  
-  
-  
+
   
   
   output$cat_plot <- renderPlot({
@@ -37,7 +36,30 @@ server <- function(input, output, session) {
       geom_bar(position = "dodge") +
       labs(x = input$cat_var1, fill = input$cat_var2) +
       theme_minimal()
-  })}
+  })
+  
+  
+  
+  
+  output$chi_sq_test <- renderPrint({
+    req(input$cat_var1, input$cat_var2)
+    tbl <- table(df[[input$cat_var1]], df[[input$cat_var2]])
+    test <- chisq.test(tbl)
+    print(test)
+  })
+  
+  output$chi_assumptions <- renderPrint({
+    req(input$cat_var1, input$cat_var2)
+    tbl <- table(df[[input$cat_var1]], df[[input$cat_var2]])
+    expected <- chisq.test(tbl)$expected
+    })
+  }
+  
+  
+  
+  
+  
+
 
 
 shinyApp(ui, server)
