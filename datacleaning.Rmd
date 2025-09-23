@@ -67,6 +67,41 @@ df_select <- df_cleaned %>%
 ```
 
 ```{r}
+library(dplyr)
+library(stringr)
+library(forcats)
+
+# Normalize fav_anime
+df_select$fav_anime <- tolower(df_select$fav_anime)
+df_select$fav_anime <- str_replace_all(df_select$fav_anime, "[[:punct:]]", "")
+df_select$fav_anime <- str_trim(df_select$fav_anime)
+df_select$fav_anime <- str_replace_all(df_select$fav_anime, "\\s+", " ")
+none_pattern <- "^none$|^no$|i don't watch|dont watch|nope|not applicable|n/a|na"
+df_select$fav_anime <- ifelse(str_detect(df_select$fav_anime, none_pattern), "none/no", df_select$fav_anime)
+top_animes <- df_select %>% count(fav_anime) %>% arrange(desc(n)) %>% slice_head(n = 10) %>% pull(fav_anime)
+df_select$fav_anime <- fct_other(df_select$fav_anime, keep = top_animes, other_level = "Other")
+
+df_select$country_birth <- tolower(df_select$country_birth)
+df_select$country_birth <- str_replace_all(df_select$country_birth, "[[:punct:]]", "")
+df_select$country_birth <- str_trim(df_select$country_birth)
+df_select$country_birth <- str_replace_all(df_select$country_birth, "\\s+", " ")
+
+df_select$country_birth <- ifelse(str_detect(df_select$country_birth, "usa|america|united states"), "usa", df_select$country_birth)
+df_select$country_birth <- ifelse(str_detect(df_select$country_birth, "australia|aus"), "australia", df_select$country_birth)
+df_select$country_birth <- ifelse(str_detect(df_select$country_birth, "uk|england|great britain|britain"), "uk", df_select$country_birth)
+df_select$country_birth <- ifelse(str_detect(df_select$country_birth, "new zealand|nz"), "new zealand", df_select$country_birth)
+df_select$country_birth <- ifelse(str_detect(df_select$country_birth, "vietnam|viet nam"), "vietnam", df_select$country_birth)
+
+
+
+top_countries <- df_select %>% count(country_birth) %>% arrange(desc(n)) %>% slice_head(n = 10) %>% pull(country_birth)
+df_select$country_birth <- fct_other(df_select$country_birth, keep = top_countries, other_level = "Other")
+
+```
+
+
+
+```{r}
 finaldf <- df_select
 
 cat_vars <- names(finaldf)[!sapply(finaldf, is.numeric)]
