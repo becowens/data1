@@ -5,7 +5,7 @@ library(janitor)
 library(DT)
 library(ggplot2)
 
-
+df <- readRDS("cleaned_data.rds") 
 
 
 ui <- fluidPage(

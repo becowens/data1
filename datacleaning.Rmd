@@ -71,5 +71,11 @@ finaldf <- df_select
 
 cat_vars <- names(finaldf)[!sapply(finaldf, is.numeric)]
 num_vars <- names(finaldf)[sapply(finaldf, is.numeric)]
+
+num_vars
+cat_vars
+```
+```{r}
+saveRDS(finaldf, file = "cleaned_data.rds") 
 ```
 
