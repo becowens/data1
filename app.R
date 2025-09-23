@@ -9,12 +9,41 @@ df <- readRDS("cleaned_data.rds")
 
 
 ui <- fluidPage(
-  selectInput("cat_var", "Choose categorical variable", choices = cat_vars),
-  uiOutput("cat_level_selector"),
-  selectInput("cat_var1", "Choose first categorical variable", choices = cat_vars),
-  selectInput("cat_var2", "Choose second categorical variable", choices = cat_vars),
-  plotOutput("cat_plot")
+  titlePanel("DATA2902 Survey Visualisations and Hypothesis Tests"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("cat_var1", "Choose first categorical variable", choices = cat_vars),
+      selectInput("cat_var2", "Choose second categorical variable", choices = cat_vars),
+      
+      hr(),
+      
+      selectInput("num_var", "Choose numeric variable", choices = num_vars),
+      selectInput("cat_var", "Choose categorical variable (2+ levels)", choices = cat_vars),
+      uiOutput("cat_level_selector"),
+      
+      hr(),
+      
+      actionButton("run_tests", "Run Tests")
+    ),
+    
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Categorical vs Categorical",
+                 plotOutput("cat_plot"),
+                 verbatimTextOutput("chi_sq_test"),
+                 verbatimTextOutput("chi_assumptions")
+        ),
+        tabPanel("Numeric vs Categorical",
+                 plotOutput("num_cat_plot"),
+                 verbatimTextOutput("t_test"),
+                 verbatimTextOutput("t_assumptions")
+        )
+      )
+    )
+  )
 )
+
 
 server <- function(input, output, session) {
   
