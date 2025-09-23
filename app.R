@@ -4,12 +4,33 @@ library(dplyr)
 library(janitor)
 library(DT)
 
-finaldf <- df_cleaned
 
-cat_vars <- names(df)[sapply(df, is.factor)]
-num_vars <- names(df)[sapply(df, is.numeric)]
+
+
+ui <- fluidPage(
+  selectInput("cat_var", "Choose categorical variable", choices = cat_vars),
+  uiOutput("cat_level_selector"),
+  selectInput("cat_var1", "Choose first categorical variable", choices = cat_vars),
+  selectInput("cat_var2", "Choose second categorical variable", choices = cat_vars),
+  plotOutput("cat_plot")
+)
 
 server <- function(input, output, session) {
+  
+  output$cat_level_selector <- renderUI({
+    req(input$cat_var)
+    levs <- levels(df[[input$cat_var]])
+    if(length(levs) > 2) {
+      selectizeInput("selected_levels", "Select two variables",
+                     choices = levs, selected = levs[1:2], multiple = TRUE)
+    }
+  })
+  
+  
+  
+  
+  
+  
   output$cat_plot <- renderPlot({
     req(input$cat_var1, input$cat_var2)
     ggplot(df, aes_string(x = input$cat_var1, fill = input$cat_var2)) +

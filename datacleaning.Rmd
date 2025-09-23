@@ -66,3 +66,10 @@ df_select <- df_cleaned %>%
 
 ```
 
+```{r}
+finaldf <- df_select
+
+cat_vars <- names(finaldf)[!sapply(finaldf, is.numeric)]
+num_vars <- names(finaldf)[sapply(finaldf, is.numeric)]
+```
+
