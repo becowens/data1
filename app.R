@@ -61,7 +61,10 @@ server <- function(input, output, session) {
   
   output$cat_plot <- renderPlot({
     req(input$cat_var1, input$cat_var2)
-    ggplot(df, aes_string(x = input$cat_var1, fill = input$cat_var2)) +
+    
+    df_nona  <- df %>%
+      filter(!is.na(.data[[input$num_var]]), !is.na(.data[[input$cat_var]]))
+    ggplot(df_nona, aes_string(x = input$cat_var1, fill = input$cat_var2)) +
       geom_bar(position = "dodge") +
       labs(x = input$cat_var1, fill = input$cat_var2) +
       theme_minimal()
@@ -82,6 +85,21 @@ server <- function(input, output, session) {
     tbl <- table(df[[input$cat_var1]], df[[input$cat_var2]])
     expected <- chisq.test(tbl)$expected
     })
+  
+  
+  output$num_cat_plot <- renderPlot({
+    req(input$num_var, input$cat_var)
+    plot_data <- df
+    if(!is.null(input$selected_levels)){
+      plot_data <- plot_data %>% filter(.data[[input$cat_var]] %in% input$selected_levels)
+    }
+    
+    ggplot(plot_data, aes_string(x = input$cat_var, y = input$num_var)) +
+      geom_boxplot() +
+      geom_jitter(width = 0.15, alpha = 0.5) +
+      labs(x = input$cat_var, y = input$num_var) +
+      theme_minimal()
+  })
   
   
   
