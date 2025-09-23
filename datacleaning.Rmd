@@ -22,7 +22,7 @@ df_cleaned <- df %>%
     `What kind of role (active or passive) do you think you are when working as part of a team?` = as.factor(`What kind of role (active or passive) do you think you are when working as part of a team?`),
     `What is your favourite anime?` = str_trim(`What is your favourite anime?`),
     `How many hours a week (on average) do you work in paid employment?` = as.numeric(`How many hours a week (on average) do you work in paid employment?`),
-    `Which year of university are you currently in?` = as.integer(`Which year of university are you currently in?`),
+    `Which year of university are you currently in?` = as.factor(`Which year of university are you currently in?`),
     `How many languages can you speak fluently?` = as.integer(`How many languages can you speak fluently?`),
     `How many languages can you read?` = as.integer(`How many languages can you read?`),
     `How old are you?` = as.integer(`How old are you?`),
