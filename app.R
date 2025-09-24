@@ -16,7 +16,11 @@ num_vars <- names(df)[sapply(df, is.numeric)]
 all_vars <- c(cat_vars, num_vars)
 var_type <- c(rep("Categorical", length(cat_vars)), rep("Numeric", length(num_vars)))
 
-choices_display <- setNames(all_vars, paste0(all_vars, " (", var_type, ")"))
+
+choices_named <- data_dictionary$Variable
+names(choices_named) <- data_dictionary$Short_Name
+
+choices_display <- setNames(choices_named, paste0(names(choices_named), " (", var_type[match(choices_named, all_vars)], ")"))
 
 ui <- fluidPage(
   titlePanel("DATA2902 Survey Visualisations and Hypothesis Tests"),
@@ -168,21 +172,21 @@ server <- function(input, output, session) {
       ggplot(df_nona, aes_string(x = var1, fill = var2)) +
         geom_bar(position = "dodge") +
         scale_fill_manual(values = pastel_blue_palette) +
-        labs(x = var1, fill = var2) +
+        labs(x = data_dictionary$Short_Name[data_dictionary$Variable == var1], y = data_dictionary$Short_Name[data_dictionary$Variable == var2]) +
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
     } else if (var1 %in% cat_vars && var2 %in% num_vars) {
       ggplot(df_nona, aes_string(x = var1, y = var2, fill = var1)) +
         geom_boxplot() +
         scale_fill_manual(values = pastel_blue_palette) +
-        labs(x = var1, y = var2) +
+        labs(x = data_dictionary$Short_Name[data_dictionary$Variable == var1], y = data_dictionary$Short_Name[data_dictionary$Variable == var2]) +
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
     } else if (var1 %in% num_vars && var2 %in% cat_vars) {
       ggplot(df_nona, aes_string(x = var2, y = var1, color = var2)) +
         geom_point(alpha = 0.7) +
         scale_color_manual(values = pastel_blue_palette) +
-        labs(x = var2, y = var1) +
+        labs(x = data_dictionary$Short_Name[data_dictionary$Variable == var1], y = data_dictionary$Short_Name[data_dictionary$Variable == var2]) +
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
     } else if ((var1 %in% num_vars) && (var2 %in% num_vars)) {
