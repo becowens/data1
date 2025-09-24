@@ -57,9 +57,12 @@ ui <- fluidPage(
         )
       ),
       hr(),
+      numericInput("alpha", "Significance level (alpha)", value = 0.05, min = 0.001, max = 0.1, step = 0.005),
       actionButton("run_tests", "Run Tests"),
       width = 3,
       uiOutput("level_selector")
+      
+      
     ),
     mainPanel(
       tabsetPanel(
@@ -210,7 +213,16 @@ server <- function(input, output, session) {
   
     if (var1 %in% cat_vars && var2 %in% cat_vars) {
       tbl <- table(df_nona[[var1]], df_nona[[var2]])
-      print(chisq.test(tbl))
+      chi_result <- chisq.test(tbl)
+      print(chi_result)
+      
+      alpha <- input$alpha
+      if (chi_result$p.value < alpha) {
+        cat("\nThe result is significant at alpha =", alpha, "\n")
+      } else {
+        cat("\nThe result is not significant at alpha =", alpha, "\n")
+      }
+      
     }
   
     else if ((var1 %in% num_vars && var2 %in% cat_vars) || (var2 %in% num_vars && var1 %in% cat_vars)) {
@@ -222,13 +234,22 @@ server <- function(input, output, session) {
       
       if (n_levels == 2) {
         print(t.test(vals ~ groups))
+        
+        
+        
       } else if (!is.null(input$level_choice) && length(input$level_choice) == 2) {
         df_sub <- df_nona %>% filter(.data[[cat_var]] %in% input$level_choice)
         groups_sub <- factor(df_sub[[cat_var]])
         vals_sub <- df_sub[[numeric_var]]
-        print(t.test(vals_sub ~ groups_sub))
+        t_result <- t.test(vals_sub ~ groups_sub)
+        print(t_result)
+        alpha <- input$alpha
+        if (t_result$p.value < alpha) {
+          cat("\nThe difference between the two selected groups is significant at alpha =", alpha, "\n")
+        } else {
+          cat("\nThe difference between the two selected groups is not significant at alpha =", alpha, "\n")
+        }
       }
-    }
     
     # Numeric vs Numeric -> just print summary
     else if (var1 %in% num_vars && var2 %in% num_vars) {
@@ -236,7 +257,7 @@ server <- function(input, output, session) {
       print(summary(df_nona[[var1]]))
       cat("\nSummary of", var2, ":\n")
       print(summary(df_nona[[var2]]))
-    }
+    }}
   })
   
 
