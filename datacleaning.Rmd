@@ -107,6 +107,10 @@ finaldf <- df_select
 cat_vars <- names(finaldf)[!sapply(finaldf, is.numeric)]
 num_vars <- names(finaldf)[sapply(finaldf, is.numeric)]
 
+
+all_vars <- c(cat_vars, num_vars)
+var_type <- c(rep("Categorical", length(cat_vars)), rep("Numeric", length(num_vars)))
+
 num_vars
 cat_vars
 ```
