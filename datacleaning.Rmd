@@ -99,10 +99,28 @@ df_select$country_birth <- fct_other(df_select$country_birth, keep = top_countri
 
 ```
 
+```{r}
+zscore_filter <- function(x, threshold = 3) {
+  if (!is.numeric(x)) return(rep(TRUE, length(x)))
+  z <- (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
+  abs(z) < threshold | is.na(z)
+}
+
+df_no_outliers <- df_select %>%
+  filter(
+    zscore_filter(exercise_hours),
+    zscore_filter(work_hours),
+    zscore_filter(fluent_languages),
+    zscore_filter(readable_languages),
+    zscore_filter(age),
+    zscore_filter(weetbix_per_sitting),
+    zscore_filter(weekly_food_spend)
+  )
+```
 
 
 ```{r}
-finaldf <- df_select
+finaldf <- df_no_outliers
 
 cat_vars <- names(finaldf)[!sapply(finaldf, is.numeric)]
 num_vars <- names(finaldf)[sapply(finaldf, is.numeric)]
