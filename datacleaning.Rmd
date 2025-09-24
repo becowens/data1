@@ -166,7 +166,7 @@ data_dictionary <- data.frame(
     "What is the average amount of money you spend each week on food/beverages?"
   ),
   
-  data_dictionary$Short_Name <- c(
+  Short_Name = c(
   "Unit",
   "Exercise Hours",
   "Work Hours",
@@ -238,6 +238,9 @@ data_dictionary <- data.frame(
 
 ```
 
+```{r}
+colnames(data_dictionary)
+```
 
 
 ```{r}
