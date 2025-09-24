@@ -154,36 +154,45 @@ server <- function(input, output, session) {
     }
     
     df_nona <- df %>% filter(!is.na(.data[[var1]]), !is.na(.data[[var2]]))
+  
     
+    library(ggplot2)
+    
+    pastel_blue_palette <- c(
+      "#a1c9f4", "#c6dbf7", "#d7e8fb", "#a8d0ff", # soft blues
+      "#7ea9e1", "#b0dfff", "#adc6ff", "#d0d9ff",
+      "#8ca6ff", "#b2bfff", "#9db8ff", "#c0c9ff"
+    )
     
     if (var1 %in% cat_vars && var2 %in% cat_vars) {
       ggplot(df_nona, aes_string(x = var1, fill = var2)) +
         geom_bar(position = "dodge") +
-        scale_fill_viridis(discrete = TRUE, option = "mako",direction = 1) +
+        scale_fill_manual(values = pastel_blue_palette) +
         labs(x = var1, fill = var2) +
-        theme_pink() +
+        theme_minimal() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
     } else if (var1 %in% cat_vars && var2 %in% num_vars) {
-      ggplot(df_nona, aes_string(x = var1, y = var2)) +
+      ggplot(df_nona, aes_string(x = var1, y = var2, fill = var1)) +
         geom_boxplot() +
-        scale_fill_viridis(discrete = TRUE, option = "mako",direction = 1) +
+        scale_fill_manual(values = pastel_blue_palette) +
         labs(x = var1, y = var2) +
-        theme_pink() +
+        theme_minimal() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
     } else if (var1 %in% num_vars && var2 %in% cat_vars) {
-      ggplot(df_nona, aes_string(x = var2, y = var1)) +
-        geom_point() +
-        scale_colour_viridis(discrete = FALSE, option = "mako",direction = 1) +
+      ggplot(df_nona, aes_string(x = var2, y = var1, color = var2)) +
+        geom_point(alpha = 0.7) +
+        scale_color_manual(values = pastel_blue_palette) +
         labs(x = var2, y = var1) +
-        theme_pink() +
+        theme_minimal() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
     } else if ((var1 %in% num_vars) && (var2 %in% num_vars)) {
       ggplot(df_nona, aes_string(x = var1, y = var2)) +
-        geom_point(alpha = 0.7) +
+        geom_point(alpha = 0.7, color = "#a1c9f4") +
         labs(x = var1, y = var2) +
-        theme_pink()
-    } 
-  })
+        theme_minimal()
+    }} )
+    
+    
   
   output$hypothesis_output <- renderPrint({
     sv <- selected_vars()
@@ -194,14 +203,12 @@ server <- function(input, output, session) {
     if (identical(var1, var2)) return()
     
     df_nona <- df %>% filter(!is.na(.data[[var1]]), !is.na(.data[[var2]]))
-    
-    # Categorical vs Categorical -> Chi-square
+  
     if (var1 %in% cat_vars && var2 %in% cat_vars) {
       tbl <- table(df_nona[[var1]], df_nona[[var2]])
       print(chisq.test(tbl))
     }
-    
-    # Numeric vs Categorical -> t-test
+  
     else if ((var1 %in% num_vars && var2 %in% cat_vars) || (var2 %in% num_vars && var1 %in% cat_vars)) {
       numeric_var <- ifelse(var1 %in% num_vars, var1, var2)
       cat_var <- ifelse(var1 %in% cat_vars, var1, var2)
@@ -230,19 +237,7 @@ server <- function(input, output, session) {
   
 
   
-  theme_pink <- function() {
-    theme_minimal() +
-      theme(
-        text = element_text(colour = "deeppink"),
-        axis.title = element_text(colour = "deeppink", face = "bold"),
-        axis.text = element_text(colour = "deeppink"),
-        legend.text = element_text(colour = "deeppink"),
-        legend.title = element_text(colour = "deeppink", face = "bold"),
-        panel.grid.major = element_line(colour = "pink", size = 0.5),
-        panel.grid.minor = element_line(colour = "pink", size = 0.25),
-        plot.title = element_text(colour = "deeppink", face = "bold", size = 16, hjust = 0.5)
-      )
-  }
+
   
   
   }
