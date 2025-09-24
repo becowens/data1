@@ -158,25 +158,25 @@ server <- function(input, output, session) {
       ggplot(df_nona, aes_string(x = var1, fill = var2)) +
         geom_bar(position = "dodge") +
         labs(x = var1, fill = var2) +
-        theme_minimal() +
+        theme_pink() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
     } else if (var1 %in% cat_vars && var2 %in% num_vars) {
       ggplot(df_nona, aes_string(x = var1, y = var2)) +
         geom_boxplot() +
         labs(x = var1, y = var2) +
-        theme_minimal() +
+        theme_pink() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
     } else if (var1 %in% num_vars && var2 %in% cat_vars) {
       ggplot(df_nona, aes_string(x = var2, y = var1)) +
         geom_boxplot() +
         labs(x = var2, y = var1) +
-        theme_minimal() +
+        theme_pink() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
     } else if ((var1 %in% num_vars) && (var2 %in% num_vars)) {
       ggplot(df_nona, aes_string(x = var1, y = var2)) +
         geom_point(alpha = 0.7) +
         labs(x = var1, y = var2) +
-        theme_minimal()
+        theme_pink()
     } 
   })
   
@@ -225,7 +225,19 @@ server <- function(input, output, session) {
   
 
   
-  
+  theme_pink <- function() {
+    theme_minimal() +
+      theme(
+        text = element_text(colour = "deeppink"),
+        axis.title = element_text(colour = "deeppink", face = "bold"),
+        axis.text = element_text(colour = "deeppink"),
+        legend.text = element_text(colour = "deeppink"),
+        legend.title = element_text(colour = "deeppink", face = "bold"),
+        panel.grid.major = element_line(colour = "pink", size = 0.5),
+        panel.grid.minor = element_line(colour = "pink", size = 0.25),
+        plot.title = element_text(colour = "deeppink", face = "bold", size = 16, hjust = 0.5)
+      )
+  }
   
   
   }
