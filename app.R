@@ -7,42 +7,59 @@ library(ggplot2)
 
 df <- readRDS("cleaned_data.rds") 
 
+all_vars <- c(cat_vars, num_vars)
+var_type <- c(rep("Categorical", length(cat_vars)), rep("Numeric", length(num_vars)))
 
 ui <- fluidPage(
   titlePanel("DATA2902 Survey Visualisations and Hypothesis Tests"),
   
   sidebarLayout(
     sidebarPanel(
-      selectInput("cat_var1", "Choose first categorical variable", choices = cat_vars),
-      selectInput("cat_var2", "Choose second categorical variable", choices = cat_vars),
-      
+      selectizeInput(
+        "var1", 
+        "Choose Variable 1", 
+        choices = setNames(all_vars, paste0(all_vars, " (", var_type, ")")),
+        options = list(
+          render = I(
+            '{
+               option: function(item, escape) {
+                 var color = item.label.includes("Categorical") ? "blue" : "green";
+                 return "<div style=\"color:" + color + "\">" + escape(item.label) + "</div>";
+               }
+             }'
+          )
+        )
+      ),
+      selectizeInput(
+        "var2", 
+        "Choose Variable 2", 
+        choices = setNames(all_vars, paste0(all_vars, " (", var_type, ")")),
+        options = list(
+          render = I(
+            '{
+               option: function(item, escape) {
+                 var color = item.label.includes("Categorical") ? "blue" : "green";
+                 return "<div style=\"color:" + color + "\">" + escape(item.label) + "</div>";
+               }
+             }'
+          )
+        )
+      ),
       hr(),
-      
-      selectInput("num_var", "Choose numeric variable", choices = num_vars),
-      selectInput("cat_var", "Choose categorical variable (2+ levels)", choices = cat_vars),
-      uiOutput("cat_level_selector"),
-      
-      hr(),
-      
       actionButton("run_tests", "Run Tests")
     ),
-    
     mainPanel(
       tabsetPanel(
-        tabPanel("Categorical vs Categorical",
-                 plotOutput("cat_plot"),
-                 verbatimTextOutput("chi_sq_test"),
-                 verbatimTextOutput("chi_assumptions")
-        ),
-        tabPanel("Numeric vs Categorical",
-                 plotOutput("num_cat_plot"),
-                 verbatimTextOutput("t_test"),
-                 verbatimTextOutput("t_assumptions")
-        )
+        tabPanel("Variable Information", verbatimTextOutput("var_info")),
+        tabPanel("Graph", plotOutput("var_plot")),
+        tabPanel("Hypothesis Test", verbatimTextOutput("hypothesis_output"))
       )
     )
   )
 )
+
+
+
 
 
 server <- function(input, output, session) {
