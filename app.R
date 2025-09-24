@@ -60,7 +60,10 @@ ui <- fluidPage(
       numericInput("alpha", "Significance level (alpha)", value = 0.05, min = 0.001, max = 0.1, step = 0.005),
       actionButton("run_tests", "Run Tests"),
       width = 3,
-      uiOutput("level_selector")
+      uiOutput("level_selector"),
+      
+      actionButton("view_warnings", "View Warnings"),
+      verbatimTextOutput("warnings_output")
       
       
     ),
@@ -199,6 +202,9 @@ server <- function(input, output, session) {
         theme_minimal()
     }} )
     
+  
+  test_warnings <- reactiveVal(NULL)
+  
     
   
   output$hypothesis_output <- renderPrint({
@@ -213,8 +219,13 @@ server <- function(input, output, session) {
   
     if (var1 %in% cat_vars && var2 %in% cat_vars) {
       tbl <- table(df_nona[[var1]], df_nona[[var2]])
-      chi_result <- chisq.test(tbl)
-      print(chi_result)
+      chi_result <- withCallingHandlers(
+        chisq.test(tbl),
+        warning = function(w) {
+          test_warnings(paste("Chi-square warning:", conditionMessage(w)))
+          invokeRestart("muffleWarning")  # prevents console printing
+        }
+      )
       
       alpha <- input$alpha
       if (chi_result$p.value < alpha) {
@@ -241,7 +252,14 @@ server <- function(input, output, session) {
         df_sub <- df_nona %>% filter(.data[[cat_var]] %in% input$level_choice)
         groups_sub <- factor(df_sub[[cat_var]])
         vals_sub <- df_sub[[numeric_var]]
-        t_result <- t.test(vals_sub ~ groups_sub)
+        
+        t_result <- withCallingHandlers(
+          t.test(vals_sub ~ groups_sub),
+          warning = function(w) {
+            test_warnings(paste("t-test warning:", conditionMessage(w)))
+            invokeRestart("muffleWarning")
+          }
+        )
         print(t_result)
         alpha <- input$alpha
         if (t_result$p.value < alpha) {
@@ -258,6 +276,18 @@ server <- function(input, output, session) {
       cat("\nSummary of", var2, ":\n")
       print(summary(df_nona[[var2]]))
     }}
+  })
+  
+  output$warnings_output <- renderPrint({
+    input$view_warnings
+    isolate({
+      w <- test_warnings()
+      if (is.null(w)) {
+        cat("No warnings detected.")
+      } else {
+        cat(w)
+      }
+    })
   })
   
 
