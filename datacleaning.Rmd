@@ -75,9 +75,11 @@ library(forcats)
 df_select$fav_anime <- tolower(df_select$fav_anime)
 df_select$fav_anime <- str_replace_all(df_select$fav_anime, "[[:punct:]]", "")
 df_select$fav_anime <- str_trim(df_select$fav_anime)
+df_select$fav_anime <- na_if(df_select$fav_anime, "")
+df_select$fav_anime <- na_if(df_select$fav_anime, " ")
 df_select$fav_anime <- str_replace_all(df_select$fav_anime, "\\s+", " ")
 none_pattern <- "^none$|^no$|i don't watch|dont watch|nope|not applicable|n/a|na"
-df_select$fav_anime <- ifelse(str_detect(df_select$fav_anime, none_pattern), "none/no", df_select$fav_anime)
+df_select$fav_anime <- ifelse(str_detect(df_select$fav_anime, none_pattern), "none", df_select$fav_anime)
 top_animes <- df_select %>% count(fav_anime) %>% arrange(desc(n)) %>% slice_head(n = 10) %>% pull(fav_anime)
 df_select$fav_anime <- fct_other(df_select$fav_anime, keep = top_animes, other_level = "Other")
 
