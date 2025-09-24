@@ -120,6 +120,103 @@ df_no_outliers <- df_select %>%
 
 
 ```{r}
+data_dictionary <- data.frame(
+  Variable = c(
+    "unit",
+    "exercise_hours",
+    "work_hours",
+    "submit_on_time",
+    "used_r_before",
+    "team_role",
+    "uni_year",
+    "fav_anime",
+    "fluent_languages",
+    "readable_languages",
+    "country_birth",
+    "grade_goal",
+    "manage_assignments",
+    "trimester_preference",
+    "age",
+    "say_yes_or_no",
+    "pays_rent",
+    "bathroom_stall_choice",
+    "weetbix_per_sitting",
+    "weekly_food_spend"
+  ),
+  Full_Name = c(
+    "Which unit are you enrolled in?",
+    "On average, how many hours each week do you spend exercising?",
+    "How many hours a week (on average) do you work in paid employment?",
+    "Do you submit assignments on time?",
+    "Have you ever used R before starting DATA2x02?",
+    "What kind of role (active or passive) do you think you are when working as part of a team?",
+    "Which year of university are you currently in?",
+    "What is your favourite anime?",
+    "How many languages can you speak fluently?",
+    "How many languages can you read?",
+    "What country were you born in?",
+    "What final grade are you aiming to achieve in DATA2x02?",
+    "When it comes to assignments / due tasks do you:",
+    "Would you prefer to have a trimester system (3 main teaching sessions per year) or stick with the existing semester system (2 main teaching sessions per year)?",
+    "How old are you?",
+    "Do you tend to lean towards saying 'yes' or towards saying 'no' to things throughout life?",
+    "Do you pay rent?",
+    "You enter a public bathroom and there are three stalls to choose from. All three are unoccupied. Which do you choose?",
+    "How many Weet-Bix would you typically eat in one sitting?",
+    "What is the average amount of money you spend each week on food/beverages?"
+  ),
+  Description = c(
+    "Identifies the unit in which the student is enrolled.",
+    "Self-reported number of weekly hours spent exercising.",
+    "Self-reported average weekly hours in paid work.",
+    "Whether the student typically submits assignments on time.",
+    "Prior experience with the R programming language before starting the unit.",
+    "Self-perception of role in group work (active contributor or passive member).",
+    "The year of university study the student is currently in.",
+    "Favourite anime as given by the student.",
+    "Number of languages the student can speak fluently.",
+    "Number of languages the student can read with understanding.",
+    "Country of birth as reported by the student.",
+    "Target final grade the student hopes to achieve in the unit.",
+    "How the student manages assignments and deadlines (planned vs last-minute).",
+    "Preference for trimester vs semester system.",
+    "Age of the student in years.",
+    "General tendency to respond 'yes' or 'no' in life situations.",
+    "Whether the student pays rent for accommodation.",
+    "Hypothetical bathroom stall choice (first, middle, last).",
+    "Typical number of Weet-Bix eaten in one sitting.",
+    "Self-reported weekly food and beverage spending."
+  ),
+  Cleaning_Steps = c(
+    "Converted to factor; NA values dropped.",
+    "Converted to numeric hours; NA values dropped.",
+    "Converted to numeric hours; NA values dropped.",
+    "Standardised to 'Yes'/'No'; NA values dropped.",
+    "Standardised to 'Yes'/'No'; NA values dropped.",
+    "Recoded into 'Active' / 'Passive'; NA values dropped.",
+    "Converted to numeric year level; NA values dropped.",
+    "Kept as free-text factor; NA values dropped.",
+    "Converted to numeric count; NA values dropped.",
+    "Converted to numeric count; NA values dropped.",
+    "Standardised country names; NA values dropped.",
+    "Recoded to ordered factor (Pass < Credit < Distinction < High Distinction); NA values dropped.",
+    "Responses grouped into categories: 'Start early', 'Steady pace', 'Last minute'; NA values dropped.",
+    "Standardised to 'Trimester' or 'Semester'; NA values dropped.",
+    "Converted to numeric age; NA values dropped.",
+    "Recoded to 'Yes' / 'No' tendency; NA values dropped.",
+    "Standardised to 'Yes' / 'No'; NA values dropped.",
+    "Recoded into factor levels: 'First', 'Middle', 'Last'; NA values dropped.",
+    "Converted to numeric count of Weet-Bix; NA values dropped.",
+    "Converted to numeric AUD dollars per week; NA values dropped."
+  ),
+  stringsAsFactors = FALSE
+)
+
+```
+
+
+
+```{r}
 finaldf <- df_no_outliers
 
 cat_vars <- names(finaldf)[!sapply(finaldf, is.numeric)]
