@@ -6,6 +6,8 @@ library(janitor)
 library(DT)
 library(ggplot2)
 library(forcats)
+library(viridis)
+
 
 df <- readRDS("cleaned_data.rds")
 df <- df %>% mutate(across(where(is.character), as.factor))
@@ -157,18 +159,21 @@ server <- function(input, output, session) {
     if (var1 %in% cat_vars && var2 %in% cat_vars) {
       ggplot(df_nona, aes_string(x = var1, fill = var2)) +
         geom_bar(position = "dodge") +
+        scale_fill_viridis(discrete = TRUE, option = "mako",direction = 1) +
         labs(x = var1, fill = var2) +
         theme_pink() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
     } else if (var1 %in% cat_vars && var2 %in% num_vars) {
       ggplot(df_nona, aes_string(x = var1, y = var2)) +
         geom_boxplot() +
+        scale_fill_viridis(discrete = TRUE, option = "mako",direction = 1) +
         labs(x = var1, y = var2) +
         theme_pink() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
     } else if (var1 %in% num_vars && var2 %in% cat_vars) {
       ggplot(df_nona, aes_string(x = var2, y = var1)) +
-        geom_boxplot() +
+        geom_point() +
+        scale_colour_viridis(discrete = FALSE, option = "mako",direction = 1) +
         labs(x = var2, y = var1) +
         theme_pink() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
