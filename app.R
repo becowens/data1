@@ -80,18 +80,41 @@ server <- function(input, output, session) {
     sv <- selected_vars()
     req(sv)
     req(sv$var1, sv$var2)
-    var1 <- sv$var1
-    var2 <- sv$var2
-    
-    
-    cat("Variable 1:", var1, "\n")
-    print(summary(df[[var1]]))
-    cat("\nClass:", class(df[[var1]]), "; Missing values:", sum(is.na(df[[var1]])), "\n\n")
-    
-    cat("Variable 2:", var2, "\n")
-    print(summary(df[[var2]]))
-    cat("\nClass:", class(df[[var2]]), "; Missing values:", sum(is.na(df[[var2]])), "\n")
-  })
+
+      
+      for (v in c(sv$var1, sv$var2)) {
+        cat("=====================================\n")
+        cat("Variable:", v, "\n")
+        
+        dict_row <- data_dictionary[data_dictionary$Variable == v, ]
+        if (nrow(dict_row) > 0) {
+          cat("Full Name:", dict_row$Full_Name, "\n")
+          cat("Description:", dict_row$Description, "\n")
+          cat("Cleaning Steps:", dict_row$Cleaning_Steps, "\n\n")
+        }
+      
+        total_before <- nrow(df)
+        total_after <- sum(!is.na(df[[v]]))
+        cat("Data points before cleaning:", total_before, "\n")
+        cat("Data points after cleaning:", total_after, "\n\n")
+        
+        if (v %in% num_vars) {
+          vals <- df[[v]][!is.na(df[[v]])]
+          cat("Type: Numeric\n")
+          cat("Range:", range(vals), "\n")
+          cat("Min:", min(vals), "\n")
+          cat("Max:", max(vals), "\n")
+          cat("Mean:", mean(vals), "\n")
+          cat("Median:", median(vals), "\n\n")
+        } else if (v %in% cat_vars) {
+          vals <- df[[v]][!is.na(df[[v]])]
+          cat("Type: Categorical\n")
+          cat("Categories:\n")
+          print(levels(vals))
+          cat("\n")
+        }
+      }
+    })
   
   output$var_plot <- renderPlot({
     sv <- selected_vars()
