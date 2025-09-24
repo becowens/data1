@@ -52,7 +52,8 @@ ui <- fluidPage(
       ),
       hr(),
       actionButton("run_tests", "Run Tests"),
-      width = 3
+      width = 3,
+      uiOutput("level_selector")
     ),
     mainPanel(
       tabsetPanel(
@@ -116,6 +117,27 @@ server <- function(input, output, session) {
       }
     })
   
+  output$level_selector <- renderUI({
+    sv <- selected_vars()
+    req(sv)
+    var1 <- sv$var1
+    var2 <- sv$var2
+    
+    if ((var1 %in% num_vars && var2 %in% cat_vars) ||
+        (var2 %in% num_vars && var1 %in% cat_vars)) {
+      
+      cat_var <- if (var1 %in% cat_vars) var1 else var2
+      lvls <- levels(df[[cat_var]])
+      
+      if (length(lvls) > 2) {
+        tagList(
+          selectInput("level_choice", "Choose two levels to compare:",
+                      choices = lvls, multiple = TRUE, selected = lvls[1:2])
+        )
+      }
+    }
+  })
+  
   output$var_plot <- renderPlot({
     sv <- selected_vars()
     req(sv)
@@ -161,93 +183,52 @@ server <- function(input, output, session) {
   output$hypothesis_output <- renderPrint({
     sv <- selected_vars()
     req(sv)
-    req(sv$var1, sv$var2)
     var1 <- sv$var1
     var2 <- sv$var2
     
-    if (identical(var1, var2)) {
-      cat("Cannot run a hypothesis test on the same variable twice. Choose two different variables.\n")
-      return()
-    }
+    if (identical(var1, var2)) return()
     
     df_nona <- df %>% filter(!is.na(.data[[var1]]), !is.na(.data[[var2]]))
     
-  
+    # Categorical vs Categorical -> Chi-square
     if (var1 %in% cat_vars && var2 %in% cat_vars) {
       tbl <- table(df_nona[[var1]], df_nona[[var2]])
+      print(chisq.test(tbl))
+    }
+    
+    # Numeric vs Categorical -> t-test
+    else if ((var1 %in% num_vars && var2 %in% cat_vars) || (var2 %in% num_vars && var1 %in% cat_vars)) {
+      numeric_var <- ifelse(var1 %in% num_vars, var1, var2)
+      cat_var <- ifelse(var1 %in% cat_vars, var1, var2)
+      groups <- factor(df_nona[[cat_var]])
+      vals <- df_nona[[numeric_var]]
+      n_levels <- length(levels(groups))
+      
+      if (n_levels == 2) {
+        print(t.test(vals ~ groups))
+      } else if (!is.null(input$level_choice) && length(input$level_choice) == 2) {
+        df_sub <- df_nona %>% filter(.data[[cat_var]] %in% input$level_choice)
+        groups_sub <- factor(df_sub[[cat_var]])
+        vals_sub <- df_sub[[numeric_var]]
+        print(t.test(vals_sub ~ groups_sub))
+      }
+    }
+    
+    # Numeric vs Numeric -> just print summary
+    else if (var1 %in% num_vars && var2 %in% num_vars) {
+      cat("Summary of", var1, ":\n")
+      print(summary(df_nona[[var1]]))
+      cat("\nSummary of", var2, ":\n")
+      print(summary(df_nona[[var2]]))
+    }
+  })
   
-      chi_result <- tryCatch({
-        chisq.test(tbl)
-      }, warning = function(w) {
 
-        chisq.test(tbl, simulate.p.value = TRUE)
-      }, error = function(e) {
-        return(NULL)
-      })
-      if (is.null(chi_result)) {
-        cat("Chi-square test could not be computed.\n")
-      } else {
-        print(chi_result)
-        expected <- chi_result$expected
-
-
-        }
-    }
-    
-    else if (var1 %in% cat_vars && var2 %in% num_vars) {
-      groups <- factor(df_nona[[var1]])
-      vals <- df_nona[[var2]]
-      n_levels <- length(levels(groups))
-      cat("Groups (levels):", paste(levels(groups), collapse = ", "), "\n")
-      if (n_levels == 2) {
-        tt <- tryCatch(t.test(vals ~ groups), error = function(e) e)
-        print(tt)
-        cat("\nShapiro-Wilk p-values by group:\n")
-        sw <- tryCatch(tapply(vals, groups, function(x) if (length(x) >= 3) shapiro.test(x)$p.value else NA), error = function(e) NA)
-        print(sw)
-      } else if (n_levels > 2) {
-        cat("Shapiro-Wilk p-values by group:\n")
-        sw <- tryCatch(tapply(vals, groups, function(x) if (length(x) >= 3) shapiro.test(x)$p.value else NA), error = function(e) NA)
-        print(sw)
-        cat("\nANOVA test:\n")
-        print(summary(aov(vals ~ groups)))
-      } else {
-        cat("Categorical variable has fewer than 2 levels - cannot run test.\n")
-      }
-    }
-    
-    else if (var1 %in% num_vars && var2 %in% cat_vars) {
-      groups <- factor(df_nona[[var2]])
-      vals <- df_nona[[var1]]
-      n_levels <- length(levels(groups))
-      cat("Groups (levels):", paste(levels(groups), collapse = ", "), "\n")
-      if (n_levels == 2) {
-        tt <- tryCatch(t.test(vals ~ groups), error = function(e) e)
-        print(tt)
-        cat("\nShapiro-Wilk p-values by group:\n")
-        sw <- tryCatch(tapply(vals, groups, function(x) if (length(x) >= 3) shapiro.test(x)$p.value else NA), error = function(e) NA)
-        print(sw)
-      } else if (n_levels > 2) {
-        cat("Shapiro-Wilk p-values by group:\n")
-        sw <- tryCatch(tapply(vals, groups, function(x) if (length(x) >= 3) shapiro.test(x)$p.value else NA), error = function(e) NA)
-        print(sw)
-        cat("\nANOVA test:\n")
-        print(summary(aov(vals ~ groups)))
-      } else {
-        cat("Categorical variable has fewer than 2 levels - cannot run test.\n")
-      }
-    }
-    
-    else if ((var1 %in% num_vars) && (var2 %in% num_vars)) {
-      if (nrow(df_nona) < 3) {
-        cat("Not enough observations to compute correlation test (need at least 3).\n")
-      } else {
-        print(cor.test(df_nona[[var1]], df_nona[[var2]], method = "pearson"))
-      }
-    } else {
-      cat("Invalid variable combination for hypothesis test\n")
-    }
-  }) }
+  
+  
+  
+  
+  }
   
 
 shinyApp(ui, server)
