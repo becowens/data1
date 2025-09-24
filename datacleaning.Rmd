@@ -71,7 +71,6 @@ library(dplyr)
 library(stringr)
 library(forcats)
 
-# Normalize fav_anime
 df_select$fav_anime <- tolower(df_select$fav_anime)
 df_select$fav_anime <- str_replace_all(df_select$fav_anime, "[[:punct:]]", "")
 df_select$fav_anime <- str_trim(df_select$fav_anime)
@@ -118,6 +117,10 @@ df_no_outliers <- df_select %>%
     zscore_filter(weetbix_per_sitting),
     zscore_filter(weekly_food_spend)
   )
+
+
+df_no_outliers <- df_select %>%
+  mutate(across(where(is.factor), fct_drop))
 ```
 
 
