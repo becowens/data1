@@ -281,6 +281,6 @@ var_type <- c(rep("Categorical", length(cat_vars)), rep("Numeric", length(num_va
 
 ```
 ```{r}
-saveRDS(finaldf, file = "cleaned_data.rds") 
+saveRDS(finaldf, file = "clean_data.rds") 
 ```
 
