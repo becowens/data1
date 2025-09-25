@@ -14,6 +14,7 @@ library(forcats)
 library(readxl)
 
 
+
 df <- read_excel("./exceldata2902.xlsx")
 
 df_cleaned <- df %>%
@@ -243,7 +244,7 @@ Cleaning_Steps = c(
   "Lowercased, punctuation removed, whitespace trimmed, blank entries set to NA, common 'none' responses standardised; top 10 responses kept, others grouped as 'Other'; NA values dropped; unused levels removed.",
   "Converted to numeric count of fluent languages; NA values dropped; outliers removed using z-scores.",
   "Converted to numeric count of readable languages; NA values dropped; outliers removed using z-scores.",
-  "Lowercased, punctuation removed, whitespace trimmed, country names standardised (e.g., 'usa', 'australia', 'uk', 'new zealand', 'vietnam'); top 10 responses kept, others grouped as 'Other'; NA values dropped; unused levels removed.",
+  "Lowercased, punctuation removed, whitespace trimmed, country names standardised (e.g., 'usa', 'australia', 'uk', 'new zealand', 'vietnam'); only top 10 responses kept, others grouped as 'Other'; NA values dropped; unused levels removed.",
   "Factor variable representing grade goal; NA values dropped; unused levels removed.",
   "Factor variable describing assignment start habits; NA values dropped; unused levels removed.",
   "Filtered to keep only 'Semester' and 'Trimester' responses; NA values dropped.",
