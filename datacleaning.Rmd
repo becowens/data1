@@ -98,6 +98,15 @@ df_select$country_birth <- ifelse(str_detect(df_select$country_birth, "vietnam|v
 top_countries <- df_select %>% count(country_birth) %>% arrange(desc(n)) %>% slice_head(n = 10) %>% pull(country_birth)
 df_select$country_birth <- fct_other(df_select$country_birth, keep = top_countries, other_level = "Other")
 
+
+
+df_select$pays_rent <- fct_other(df_select$pays_rent, keep = c("Yes", "No"), other_level = NA)
+df_select$pays_rent <- fct_drop(df_select$pays_rent)
+
+df_select$trimester_preference <- fct_other(df_select$trimester_preference, keep = c("Semester", "Trimester"), other_level = NA)
+df_select$trimester_preference <- fct_drop(df_select$trimester_preference)
+
+
 ```
 
 ```{r}
@@ -216,28 +225,29 @@ data_dictionary <- data.frame(
     "Typical number of Weet-Bix eaten in one sitting.",
     "Self-reported weekly food and beverage spending."
   ),
-  Cleaning_Steps = c(
-    "Converted to factor; NA values dropped.",
-    "Converted to numeric hours; NA values dropped.",
-    "Converted to numeric hours; NA values dropped.",
-    "Standardised to 'Yes'/'No'; NA values dropped.",
-    "Standardised to 'Yes'/'No'; NA values dropped.",
-    "Recoded into 'Active' / 'Passive'; NA values dropped.",
-    "Converted to numeric year level; NA values dropped.",
-    "Kept as free-text factor; NA values dropped.",
-    "Converted to numeric count; NA values dropped.",
-    "Converted to numeric count; NA values dropped.",
-    "Standardised country names; NA values dropped.",
-    "Recoded to ordered factor (Pass < Credit < Distinction < High Distinction); NA values dropped.",
-    "Responses grouped into categories: 'Start early', 'Steady pace', 'Last minute'; NA values dropped.",
-    "Standardised to 'Trimester' or 'Semester'; NA values dropped.",
-    "Converted to numeric age; NA values dropped.",
-    "Recoded to 'Yes' / 'No' tendency; NA values dropped.",
-    "Standardised to 'Yes' / 'No'; NA values dropped.",
-    "Recoded into factor levels: 'First', 'Middle', 'Last'; NA values dropped.",
-    "Converted to numeric count of Weet-Bix; NA values dropped.",
-    "Converted to numeric AUD dollars per week; NA values dropped."
-  ),
+Cleaning_Steps = c(
+  "Converted to a factor variable; NA values dropped; unused levels removed.",
+  "Converted to numeric hours; NA values dropped; outliers removed using z-scores (>3 standard deviations).",
+  "Converted to numeric hours; NA values dropped; outliers removed using z-scores.",
+  "Converted to a factor variable; NA values dropped; unused levels removed.",
+  "Converted to a factor variable; NA values dropped; unused levels removed.",
+  "Converted to a factor variable; NA values dropped; unused levels removed.",
+  "Converted to numeric year level; NA values dropped; unused levels removed.",
+  "Lowercased, punctuation removed, whitespace trimmed, blank entries set to NA, common 'none' responses standardised; top 10 responses kept, others grouped as 'Other'; NA values dropped; unused levels removed.",
+  "Converted to numeric count of fluent languages; NA values dropped; outliers removed using z-scores.",
+  "Converted to numeric count of readable languages; NA values dropped; outliers removed using z-scores.",
+  "Lowercased, punctuation removed, whitespace trimmed, country names standardised (e.g., 'usa', 'australia', 'uk', 'new zealand', 'vietnam'); top 10 responses kept, others grouped as 'Other'; NA values dropped; unused levels removed.",
+  "Factor variable representing grade goal; NA values dropped; unused levels removed.",
+  "Factor variable describing assignment start habits; NA values dropped; unused levels removed.",
+  "Filtered to keep only 'Semester' and 'Trimester' responses; NA values dropped.",
+  "Converted to numeric age; NA values dropped; outliers removed using z-scores.",
+  "Factor variable representing yes/no tendency; NA values dropped; unused levels removed.",
+  "Filtered to keep only 'Yes' and 'No' responses; NA values dropped.",
+  "Factor variable describing choice of bathroom stall; NA values dropped; unused levels removed.",
+  "Converted to numeric count of Weet-Bix per sitting; NA values dropped; outliers removed using z-scores.",
+  "Converted to numeric AUD dollars spent weekly on food; NA values dropped; outliers removed using z-scores."
+)
+,
   stringsAsFactors = FALSE
 )
 
@@ -258,8 +268,7 @@ num_vars <- names(finaldf)[sapply(finaldf, is.numeric)]
 all_vars <- c(cat_vars, num_vars)
 var_type <- c(rep("Categorical", length(cat_vars)), rep("Numeric", length(num_vars)))
 
-num_vars
-cat_vars
+
 ```
 ```{r}
 saveRDS(finaldf, file = "cleaned_data.rds") 
