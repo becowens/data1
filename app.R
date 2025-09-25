@@ -28,8 +28,8 @@ ui <- fluidPage(
       selectizeInput(
         "var1",
         "Choose Variable 1",
-        choices = choices_display,
-        selected = if (length(all_vars) >= 1) all_vars[1] else NULL,
+        choices = c(" " = "", choices_display),
+        selected = "", 
         options = list(
           render = I('{
                option: function(item, escape) {
@@ -43,8 +43,8 @@ ui <- fluidPage(
       selectizeInput(
         "var2",
         "Choose Variable 2",
-        choices = choices_display,
-        selected = if (length(all_vars) >= 2) all_vars[2] else NULL,
+        choices = c(" " = "", choices_display),
+        selected = "", 
         options = list(
           render = I('{
                option: function(item, escape) {
@@ -57,6 +57,7 @@ ui <- fluidPage(
       ),
       hr(),
       uiOutput("level_selector"),
+      uiOutput("graph_level_selector"),
       numericInput("alpha", "Significance level (alpha)", value = 0.05, min = 0.001, max = 0.1, step = 0.005),
       actionButton("run_tests", "Run Tests"),
       width = 3,
@@ -89,6 +90,29 @@ server <- function(input, output, session) {
     }
     list(var1 = input$var1, var2 = input$var2)
   }, ignoreNULL = FALSE)
+  
+  
+  output$graph_level_selector <- renderUI({
+    sv <- selected_vars()
+    req(sv)
+    var1 <- sv$var1
+    var2 <- sv$var2
+    
+    cat_vars_selected <- c(var1, var2)[c(var1, var2) %in% cat_vars]
+    
+    if (length(cat_vars_selected) > 0) {
+      checkbox_inputs <- lapply(cat_vars_selected, function(cv) {
+        lvls <- levels(df[[cv]])
+        checkboxGroupInput(
+          inputId = paste0("graph_levels_", cv),
+          label = paste("Select levels to include for", data_dictionary$Short_Name[data_dictionary$Variable == cv]),
+          choices = lvls,
+          selected = lvls  
+        )
+      })
+      do.call(tagList, checkbox_inputs)
+    }
+  })
   
   output$var_info <- renderPrint({
     sv <- selected_vars()
@@ -170,44 +194,61 @@ server <- function(input, output, session) {
       return()
     }
     
-    df_nona <- df %>% filter(!is.na(.data[[var1]]), !is.na(.data[[var2]]))
+    df_nona_unfilered <- df %>% filter(!is.na(.data[[var1]]), !is.na(.data[[var2]]))
+    
+    
+    df_nona<- df_nona_unfilered
+    
+    cat_vars_selected <- c(var1, var2)[c(var1, var2) %in% cat_vars]
+    for (cv in cat_vars_selected) {
+      selected_lvls <- input[[paste0("graph_levels_", cv)]]
+      if (!is.null(selected_lvls)) {
+        df_nona <- df_nona %>% filter(.data[[cv]] %in% selected_lvls)
+      }
+    }
+  
   
     
-    library(ggplot2)
-    
     pastel_blue_palette <- c(
-      "#a1c9f4", "#c6dbf7", "#d7e8fb", "#a8d0ff", # soft blues
+      "#a1c9f4", "#c6dbf7", "#d7e8fb", "#a8d0ff",
       "#7ea9e1", "#b0dfff", "#adc6ff", "#d0d9ff",
       "#8ca6ff", "#b2bfff", "#9db8ff", "#c0c9ff"
     )
     
+    x_label <- data_dictionary$Short_Name[data_dictionary$Variable == var1]
+    y_label <- data_dictionary$Short_Name[data_dictionary$Variable == var2]
+    
     if (var1 %in% cat_vars && var2 %in% cat_vars) {
       ggplot(df_nona, aes_string(x = var1, fill = var2)) +
         geom_bar(position = "dodge") +
-        scale_fill_manual(values = pastel_blue_palette) +
-        labs(x = data_dictionary$Short_Name[data_dictionary$Variable == var1], y = data_dictionary$Short_Name[data_dictionary$Variable == var2]) +
+        scale_fill_manual(name = y_label, values = pastel_blue_palette) +
+        labs(x = x_label, y = y_label, title = paste(x_label, "vs", y_label)) +
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
+      
     } else if (var1 %in% cat_vars && var2 %in% num_vars) {
       ggplot(df_nona, aes_string(x = var1, y = var2, fill = var1)) +
         geom_boxplot() +
-        scale_fill_manual(values = pastel_blue_palette) +
-        labs(x = data_dictionary$Short_Name[data_dictionary$Variable == var1], y = data_dictionary$Short_Name[data_dictionary$Variable == var2]) +
+        scale_fill_manual(name = x_label, values = pastel_blue_palette) +
+        labs(x = x_label, y = y_label, title = paste(x_label, "vs", y_label)) +
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
+      
     } else if (var1 %in% num_vars && var2 %in% cat_vars) {
       ggplot(df_nona, aes_string(x = var2, y = var1, color = var2)) +
         geom_point(alpha = 0.7) +
-        scale_color_manual(values = pastel_blue_palette) +
-        labs(x = data_dictionary$Short_Name[data_dictionary$Variable == var1], y = data_dictionary$Short_Name[data_dictionary$Variable == var2]) +
+        scale_color_manual(name = y_label, values = pastel_blue_palette) +
+        labs(x = y_label, y = x_label, title = paste(x_label, "vs", y_label)) +
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
-    } else if ((var1 %in% num_vars) && (var2 %in% num_vars)) {
+      
+    } else if (var1 %in% num_vars && var2 %in% num_vars) {
       ggplot(df_nona, aes_string(x = var1, y = var2)) +
         geom_point(alpha = 0.7, color = "#a1c9f4") +
-        labs(x = var1, y = var2) +
-        theme_minimal()
-    }} )
+        labs(x = x_label, y = y_label, title = paste(x_label, "vs", y_label)) +
+        theme_minimal()}
+  
+    })
     
   
   test_warnings <- reactiveVal(NULL)
@@ -269,7 +310,7 @@ server <- function(input, output, session) {
         
       } else {
         if (is.null(input$level_choice) || length(input$level_choice) != 2) {
-          cat("⚠ Please select exactly two levels to run the t-test.\n")
+          cat("Please select exactly two levels to run the t-test.\n")
           return()
         }
         
