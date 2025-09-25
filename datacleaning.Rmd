@@ -107,6 +107,14 @@ df_select$trimester_preference <- fct_other(df_select$trimester_preference, keep
 df_select$trimester_preference <- fct_drop(df_select$trimester_preference)
 
 
+df_select <- df_select %>%
+  mutate(uni_year = factor(
+    uni_year,
+    levels = c("First year", "Second year", "Third year", "Fourth year","Fifth or higher year"), 
+    ordered = TRUE
+  ))
+
+
 ```
 
 ```{r}
@@ -247,6 +255,8 @@ Cleaning_Steps = c(
 ,
   stringsAsFactors = FALSE
 )
+
+
 
 ```
 
