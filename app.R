@@ -1,3 +1,6 @@
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+
+
 library(shiny)
 library(readxl)
 library(dplyr)

@@ -6,13 +6,15 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+
 library(dplyr)
 library(stringr)
 library(forcats)
 library(readxl)
 
 
-df <- read_excel("DATA2x02_survey_2025_Responses.xlsx")
+df <- read_excel("./exceldata2902.xlsx")
 
 df_cleaned <- df %>%
   mutate(
