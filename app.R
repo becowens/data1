@@ -227,12 +227,22 @@ server <- function(input, output, session) {
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
       
     } else if (var1 %in% cat_vars && var2 %in% num_vars) {
+      df_nona[[var1]] <- factor(df_nona[[var1]])
       ggplot(df_nona, aes_string(x = var1, y = var2, fill = var1)) +
         geom_boxplot() +
         scale_fill_manual(name = x_label, values = pastel_blue_palette) +
         labs(x = x_label, y = y_label, title = paste(x_label, "vs", y_label)) +
         theme_minimal() +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1))
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))}
+      
+      else if (var2 %in% cat_vars && var1 %in% num_vars) {
+        df_nona[[var2]] <- factor(df_nona[[var2]])
+        ggplot(df_nona, aes_string(x = var2, y = var1, fill = var2)) +
+          geom_boxplot() +
+          scale_fill_manual(name = y_label, values = pastel_blue_palette) +
+          labs(x = y_label, y = x_label, title = paste(y_label, "vs", x_label)) +
+          theme_minimal() +
+          theme(axis.text.x = element_text(angle = 45, hjust = 1))
       
     } else if (var1 %in% num_vars && var2 %in% cat_vars) {
       ggplot(df_nona, aes_string(x = var2, y = var1, color = var2)) +
