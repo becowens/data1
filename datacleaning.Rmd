@@ -125,10 +125,7 @@ df_no_outliers <- df_select %>%
     zscore_filter(age),
     zscore_filter(weetbix_per_sitting),
     zscore_filter(weekly_food_spend)
-  )
-
-
-df_no_outliers <- df_select %>%
+  ) %>%
   mutate(across(where(is.factor), fct_drop))
 ```
 
