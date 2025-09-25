@@ -12,7 +12,7 @@ library(forcats)
 library(readxl)
 
 
-df <- read_excel("/Users/rebeccaowens/Desktop/data1/DATA2x02_survey_2025_Responses.xlsx")
+df <- read_excel("DATA2x02_survey_2025_Responses.xlsx")
 
 df_cleaned <- df %>%
   mutate(
