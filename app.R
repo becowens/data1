@@ -173,9 +173,9 @@ server <- function(input, output, session) {
             "Choose exactly two levels to compare:",
             choices = lvls,
             multiple = TRUE,
-            selected = NULL   # default to blank
+            selected = NULL   
           ),
-          uiOutput("level_warning")  # place to show warning
+          uiOutput("level_warning") 
         )
       }
     }
