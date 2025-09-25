@@ -1,4 +1,3 @@
-# app.R
 library(shiny)
 library(readxl)
 library(dplyr)
@@ -57,12 +56,14 @@ ui <- fluidPage(
         )
       ),
       hr(),
+      uiOutput("level_selector"),
       numericInput("alpha", "Significance level (alpha)", value = 0.05, min = 0.001, max = 0.1, step = 0.005),
       actionButton("run_tests", "Run Tests"),
       width = 3,
-      uiOutput("level_selector"),
+      checkboxInput("show_warnings", "Show warnings", value = FALSE),
       
-      actionButton("view_warnings", "View Warnings"),
+      
+      
       verbatimTextOutput("warnings_output")
       
       
@@ -143,8 +144,14 @@ server <- function(input, output, session) {
       
       if (length(lvls) > 2) {
         tagList(
-          selectInput("level_choice", "Choose two levels to compare:",
-                      choices = lvls, multiple = TRUE, selected = lvls[1:2])
+          selectInput(
+            "level_choice",
+            "Choose exactly two levels to compare:",
+            choices = lvls,
+            multiple = TRUE,
+            selected = NULL   # default to blank
+          ),
+          uiOutput("level_warning")  # place to show warning
         )
       }
     }
@@ -208,6 +215,7 @@ server <- function(input, output, session) {
     
   
   output$hypothesis_output <- renderPrint({
+    test_warnings(NULL) 
     sv <- selected_vars()
     req(sv)
     var1 <- sv$var1
@@ -216,27 +224,27 @@ server <- function(input, output, session) {
     if (identical(var1, var2)) return()
     
     df_nona <- df %>% filter(!is.na(.data[[var1]]), !is.na(.data[[var2]]))
-  
+    
     if (var1 %in% cat_vars && var2 %in% cat_vars) {
       tbl <- table(df_nona[[var1]], df_nona[[var2]])
       chi_result <- withCallingHandlers(
         chisq.test(tbl),
         warning = function(w) {
           test_warnings(paste("Chi-square warning:", conditionMessage(w)))
-          invokeRestart("muffleWarning")  # prevents console printing
+          invokeRestart("muffleWarning")  
         }
       )
-      
+      print(chi_result)
       alpha <- input$alpha
       if (chi_result$p.value < alpha) {
         cat("\nThe result is significant at alpha =", alpha, "\n")
       } else {
         cat("\nThe result is not significant at alpha =", alpha, "\n")
       }
+    
+    } else if ((var1 %in% num_vars && var2 %in% cat_vars) || 
+               (var2 %in% num_vars && var1 %in% cat_vars)) {
       
-    }
-  
-    else if ((var1 %in% num_vars && var2 %in% cat_vars) || (var2 %in% num_vars && var1 %in% cat_vars)) {
       numeric_var <- ifelse(var1 %in% num_vars, var1, var2)
       cat_var <- ifelse(var1 %in% cat_vars, var1, var2)
       groups <- factor(df_nona[[cat_var]])
@@ -244,11 +252,27 @@ server <- function(input, output, session) {
       n_levels <- length(levels(groups))
       
       if (n_levels == 2) {
-        print(t.test(vals ~ groups))
+        t_result <- withCallingHandlers(
+          t.test(vals ~ groups),
+          warning = function(w) {
+            test_warnings(paste("t-test warning:", conditionMessage(w)))
+            invokeRestart("muffleWarning")
+          }
+        )
+        print(t_result)
+        alpha <- input$alpha
+        if (t_result$p.value < alpha) {
+          cat("\nThe difference between the two groups is significant at alpha =", alpha, "\n")
+        } else {
+          cat("\nThe difference between the two groups is not significant at alpha =", alpha, "\n")
+        }
         
+      } else {
+        if (is.null(input$level_choice) || length(input$level_choice) != 2) {
+          cat("⚠ Please select exactly two levels to run the t-test.\n")
+          return()
+        }
         
-        
-      } else if (!is.null(input$level_choice) && length(input$level_choice) == 2) {
         df_sub <- df_nona %>% filter(.data[[cat_var]] %in% input$level_choice)
         groups_sub <- factor(df_sub[[cat_var]])
         vals_sub <- df_sub[[numeric_var]]
@@ -268,26 +292,37 @@ server <- function(input, output, session) {
           cat("\nThe difference between the two selected groups is not significant at alpha =", alpha, "\n")
         }
       }
-    
-    # Numeric vs Numeric -> just print summary
-    else if (var1 %in% num_vars && var2 %in% num_vars) {
+      
+    } else if (var1 %in% num_vars && var2 %in% num_vars) {
       cat("Summary of", var1, ":\n")
       print(summary(df_nona[[var1]]))
       cat("\nSummary of", var2, ":\n")
       print(summary(df_nona[[var2]]))
-    }}
+      
+      cat("No hypothesis test for numeric vs numeric.\n")
+      cor_val <- cor(df_nona[[var1]], df_nona[[var2]], use = "complete.obs")
+      cat("R² =", round(cor_val^2, 3), "\n")
+    }
   })
   
+  
   output$warnings_output <- renderPrint({
-    input$view_warnings
-    isolate({
-      w <- test_warnings()
-      if (is.null(w)) {
-        cat("No warnings detected.")
-      } else {
-        cat(w)
-      }
-    })
+    if (!input$show_warnings) return(invisible())
+    
+    w <- test_warnings()
+    if (is.null(w)) {
+      cat("No warnings detected.")
+    } else {
+      cat(w)
+    }
+  })
+  
+  output$level_warning <- renderUI({
+    req(input$level_choice)
+    if (length(input$level_choice) != 2) {
+      div(style = "color: red; font-weight: bold;",
+          "Please select exactly two levels to run the test.")
+    }
   })
   
 
